@@ -1,33 +1,39 @@
-<!DOCTYPE html>-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEGO Traffic Dashboard</title>
+    <title>LEGO Traffic Monitor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="dashboard-container">
+
+    <div class="dashboard">
         <header>
-            <h1>LEGO Pedestrian Monitor</h1>
+            <h1>LEGO Smart Monitor</h1>
+            
             <div id="status-card" class="status-ok">
-                <span id="status-label">ROAD CLEAR</span>
+                <span id="status-label">SYSTEM READY</span>
                 <span id="count-badge">0</span>
             </div>
         </header>
 
-        <div class="viewfinder-wrapper">
+        <div class="controls">
+            <button id="start-btn">Start Monitor</button>
+        </div>
+
+        <div class="viewfinder">
             <video id="webcam" autoplay muted playsinline></video>
-            <canvas id="overlay-canvas"></canvas>
+            <canvas id="overlay"></canvas>
         </div>
         
-        <div class="footer-info">
+        <div class="footer">
             <p>Model: <strong>YOLO-Pro Nano</strong></p>
-            <p>Target: <strong>Pedestrians</strong></p>
         </div>
     </div>
 
     <script src="edge-impulse-standalone.js"></script>
     <script src="script.js"></script>
+
 </body>
 </html>
