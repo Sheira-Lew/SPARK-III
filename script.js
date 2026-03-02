@@ -11,50 +11,58 @@ let classifier;
 let isRunning = false;
 
 // 2. The Start Button Logic
-// Mobile browsers require a physical click to unlock the camera.
 startBtn.addEventListener('click', async () => {
+    // Disable button and update UI to show progress
     startBtn.disabled = true;
-    startBtn.innerText = "Initializing...";
+    startBtn.innerText = "Initializing AI...";
 
     try {
-        // Initialize the Edge Impulse WebAssembly engine
+        // Step A: Initialize the Edge Impulse engine
+        console.log("Loading model...");
         classifier = new EdgeImpulseClassifier();
         await classifier.init();
         
-        // Start the Camera with the updated flexible function
+        // Step B: Start the Camera
+        console.log("Requesting camera...");
         await startCamera();
         
-        // If successful, hide the button and start the AI loop
+        // Step C: Success! Hide button and start AI loop
         startBtn.style.display = 'none';
         isRunning = true;
         requestAnimationFrame(runInference);
-        
-        console.log("System Online and AI Running");
+        console.log("System Online");
+
     } catch (err) {
-        console.error("Startup Error:", err);
-        startBtn.innerText = "Error: Check Permissions";
+        console.error("Startup Failure:", err);
+        // Display a more specific message if it's a permission issue
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            startBtn.innerText = "Error: Camera Blocked";
+        } else {
+            startBtn.innerText = "Error: Check Permissions";
+        }
         startBtn.disabled = false;
     }
 });
 
 // 3. UPDATED: Flexible Camera Function
 async function startCamera() {
-    // Requesting video with 'environment' (back camera) preference
-    const stream = await navigator.mediaDevices.getUserMedia({
+    const constraints = {
         video: { 
-            facingMode: "environment",
+            facingMode: "environment", // Prioritize back camera
             width: { ideal: 640 },
             height: { ideal: 480 }
         },
         audio: false
-    });
+    };
 
+    // Request the stream
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject = stream;
 
-    // Use a Promise to ensure the video hardware is fully ready
+    // Wait for hardware to be fully ready
     return new Promise((resolve) => {
         video.onloadedmetadata = () => {
-            video.play(); // Force play for mobile browsers
+            video.play(); // Force playback
             resolve();
         };
     });
@@ -64,32 +72,30 @@ async function startCamera() {
 async function runInference() {
     if (!isRunning) return;
 
-    // Match canvas dimensions to the actual video stream size
+    // Ensure drawing canvas matches video stream dimensions
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Extract image data to send to the AI model
+    // Grab frame and run classification
     const imgData = getFrameData();
-    
-    // Perform classification (Object Detection)
     const result = await classifier.classify(imgData);
     const objects = result.results;
 
-    // Clear the "glass" overlay before drawing new boxes
+    // Clear previous drawings
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Update the UI counter
+    // Update the counter on screen
     const count = objects.length;
     countBadge.innerText = count;
 
-    // Draw bounding boxes around detected pedestrians
+    // Draw boxes around LEGO pedestrians
     objects.forEach(obj => {
-        ctx.strokeStyle = "#00FF00"; // Bright Green
+        ctx.strokeStyle = "#00FF00"; // Green boxes
         ctx.lineWidth = 4;
         ctx.strokeRect(obj.x, obj.y, obj.width, obj.height);
     });
 
-    // 5. Traffic Logic (Red/Green Alerts)
+    // Update Status Card based on count
     if (count >= 5) { 
         statusLabel.innerText = "⚠️ CONGESTION!";
         statusCard.className = "status-jam"; 
@@ -98,15 +104,14 @@ async function runInference() {
         statusCard.className = "status-ok";
     }
 
-    // Keep the loop running
+    // Loop the next frame
     requestAnimationFrame(runInference);
 }
 
-// Helper to grab pixels from the video feed
+// Helper to grab pixels from video feed for the AI
 function getFrameData() {
     const tempCanvas = document.createElement('canvas');
-    // Ensure these dimensions match your Edge Impulse Model (e.g., 320x320)
-    const modelSize = 320; 
+    const modelSize = 320; // Must match your Edge Impulse project settings
     tempCanvas.width = modelSize;
     tempCanvas.height = modelSize;
     const tCtx = tempCanvas.getContext('2d');
