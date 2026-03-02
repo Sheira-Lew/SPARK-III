@@ -1,39 +1,90 @@
-body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
-.monitor-wrap { max-width: 600px; margin: 20px auto; }
-.camera-container { position: relative; border: 4px solid #444; border-radius: 8px; overflow: hidden; }
-video { width: 100%; display: block; }
-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+/* 1. Base Mobile Setup */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #121212; /* Dark theme looks better on OLED screens */
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+}
 
-#alert-banner { padding: 15px; margin-bottom: 10px; border-radius: 8px; transition: 0.3s; }
-.clear { background: #2e7d32; }
-.congested { background: #d32f2f; animation: pulse 1s infinite; }
-
-
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
-.controls {
-    margin: 20px 0;
+.dashboard {
+    width: 100%;
+    max-width: 500px; /* Limits width on tablets/desktops */
+    padding: 15px;
     text-align: center;
 }
 
-#start-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    font-size: 18px;
+/* 2. Status Card (The Green/Red Box) */
+#status-card {
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-weight: bold;
+    font-size: 20px;
+    transition: background-color 0.4s ease;
+}
+
+.status-ok { background-color: #28a745; } /* Green */
+.status-jam { background-color: #dc3545; animation: pulse 1.5s infinite; } /* Red */
+
+#count-badge {
+    background: rgba(0,0,0,0.3);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 24px;
+}
+
+/* 3. The Start Button (Touch Friendly) */
+#start-btn {
+    width: 100%;
+    padding: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border: none;
     border-radius: 50px;
+    box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
     cursor: pointer;
-    transition: 0.3s;
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    margin: 20px 0;
 }
 
-#start-btn:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
+#start-btn:active { transform: scale(0.98); }
+
+/* 4. Camera Viewfinder */
+.viewfinder {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3; /* Standard camera ratio */
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #333;
 }
 
-#start-btn:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
+#webcam {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Fills the box without stretching */
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allows clicks to go through to video if needed */
+}
+
+/* 5. Animations */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
 }
